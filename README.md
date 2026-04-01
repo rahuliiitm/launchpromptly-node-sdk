@@ -1,5 +1,8 @@
 # launchpromptly
 
+[![npm version](https://img.shields.io/npm/v/launchpromptly.svg)](https://www.npmjs.com/package/launchpromptly)
+[![npm downloads](https://img.shields.io/npm/dm/launchpromptly.svg)](https://www.npmjs.com/package/launchpromptly)
+
 Official Node.js SDK for [LaunchPromptly](https://launchpromptly.dev) — runtime safety layer for LLM applications. PII redaction, prompt injection detection, cost guards, and content filtering with zero dependencies.
 
 ## Install
