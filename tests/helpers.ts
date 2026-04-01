@@ -43,8 +43,8 @@ export interface TestContext {
  * Returns everything the test runner needs.
  */
 export async function setup(): Promise<TestContext> {
-  const email = 'rahul.iiitm06@gmail.com';
-  const password = '12345678';
+  const email = process.env.TEST_EMAIL ?? 'test@example.com';
+  const password = process.env.TEST_PASSWORD ?? 'changeme';
 
   // 1. Login (use existing account)
   const auth = await apiCall<{
