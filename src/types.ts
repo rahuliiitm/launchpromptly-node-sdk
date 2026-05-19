@@ -41,6 +41,19 @@ export interface SecurityOptions {
    * Requires: npm install @huggingface/transformers
    */
   useML?: boolean | MLGuardrailType[];
+
+  /**
+   * ML execution mode.
+   *
+   * - `'sidecar'` (default since v2): All ML runs in the `launchpromptly-scanner` sidecar/service.
+   *   SDK is <1 MB pure rule-based + I/O. No heavy native deps (onnxruntime-node, etc.) required.
+   *
+   * - `'inline'` (DEPRECATED — removal in v3, Dec 2026): ML models run inside the SDK process.
+   *   Only use if you cannot deploy the scanner service. Emits a console warning on startup.
+   *
+   * See: https://docs.launchpromptly.dev/ml-modes
+   */
+  mlMode?: 'sidecar' | 'inline';
   pii?: PIISecurityOptions;
   injection?: InjectionSecurityOptions;
   jailbreak?: JailbreakSecurityOptions;

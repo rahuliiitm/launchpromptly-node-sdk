@@ -273,6 +273,18 @@ export class LaunchPromptly {
     const als = this.als;
     let security = options.security ? resolveSecurityOptions(options.security) : undefined;
 
+    // Phase 2: mlMode deprecation — 'inline' is deprecated; 'sidecar' is the new default.
+    // Removal target: v3 / December 2026.
+    if (security?.mlMode === 'inline') {
+      // Emit once per wrap() call site
+      console.warn(
+        '[LaunchPromptly] DEPRECATION WARNING: mlMode: \'inline\' is deprecated and will be removed in v3 (December 2026).\n' +
+        '  The default is now mlMode: \'sidecar\'. All ML runs in the launchpromptly-scanner service.\n' +
+        '  Migration guide: https://docs.launchpromptly.dev/migration/ml-mode-sidecar\n' +
+        '  To suppress this warning: set mlMode: \'sidecar\' and deploy the scanner service.',
+      );
+    }
+
     // Lazy ML provider state — loaded once on first call, cached for subsequent calls
     let mlInitDone = false;
     let mlInitPromise: Promise<void> | null = null;

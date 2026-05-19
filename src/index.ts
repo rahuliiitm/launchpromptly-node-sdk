@@ -254,6 +254,29 @@ export type {
   CategoryRegression,
 } from './redteam';
 
+// MCP Defense — proxy + IDE config watcher
+export { McpSecurityProxy, IdeConfigWatcherDaemon } from './mcp';
+export type {
+  McpProxyPolicy, McpProxyAction, McpCallContext, McpProxyResult,
+  WatcherAlert, WatcherAlertLevel, WatcherAlertCallback,
+} from './mcp';
+
+// Multimodal scanning (images, PDFs, files)
+export {
+  ImageExtractor,
+  PdfExtractor,
+  FileExtractor,
+  ImagePrefilter,
+  MultimodalScanner,
+} from './multimodal';
+export type {
+  MediaPart,
+  MediaPartSource,
+  ImageScanResult,
+  PdfScanResult,
+  FileScanResult,
+} from './multimodal/types';
+
 // Backward-compatible alias
 export { LaunchPromptly as PlanForge } from './launch-promptly';
 export type { LaunchPromptlyOptions as PlanForgeOptions, MLGuardrailType } from './types';

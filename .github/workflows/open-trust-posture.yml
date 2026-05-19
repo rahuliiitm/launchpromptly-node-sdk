@@ -1,0 +1,98 @@
+name: Open Trust Posture
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
+jobs:
+  # ── Semgrep SAST ─────────────────────────────────────────────────────────────
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: 'p/typescript p/owasp-top-ten p/supply-chain'
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  # ── Grype Dependency Scan ─────────────────────────────────────────────────────
+  deps:
+    name: Dependency Scan (Grype)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anchore/scan-action@v3
+        with:
+          path: '.'
+          fail-build: true
+          severity-cutoff: high
+          output-format: sarif
+          output-file: grype-results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: grype-results.sarif
+          category: grype
+
+  # ── NPM Provenance + SBOM on release ─────────────────────────────────────────
+  publish:
+    name: Publish with Provenance
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    needs: [sast, deps]
+    permissions:
+      contents: read
+      id-token: write  # for npm provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run build
+      - name: Generate SBOM
+        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.cyclonedx.json
+      - name: Publish with provenance
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cyclonedx.json
+
+  # ── OpenSSF Scorecard ─────────────────────────────────────────────────────────
+  scorecard:
+    name: OpenSSF Scorecard
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: scorecard.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: scorecard.sarif
+          category: scorecard
