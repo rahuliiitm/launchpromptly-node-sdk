@@ -1,4 +1,7 @@
 export { LaunchPromptly } from './launch-promptly';
+
+// Phase 3 L5: agentic plan-then-act helpers.
+export * as agent from './agent';
 export type {
   LaunchPromptlyOptions,
   WrapOptions,
