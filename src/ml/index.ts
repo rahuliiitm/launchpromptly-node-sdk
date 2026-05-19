@@ -1,80 +1,101 @@
 /**
- * LaunchPromptly ML plugin — optional ML-based security detectors.
+ * launchpromptly/ml — Phase 3 deprecation shim.
  *
- * Install via: npm install onnxruntime-node @huggingface/transformers
+ * The inline ML detectors have been removed from the SDK. ML detection now
+ * runs in the LaunchPromptly Scanner sidecar (one fleet, shared across all
+ * app pods, hot-reloadable models, GPU-aware). The SDK is a thin trust
+ * boundary running only rule-based work locally.
  *
- * Uses ONNX Runtime for native inference (8-20ms) when onnxruntime-node is installed.
- * Falls back to @huggingface/transformers WASM (500ms-2s) otherwise.
+ * Migration:
  *
- * Detectors:
- * - {@link MLInjectionDetector} — Prompt injection detection
- * - {@link MLJailbreakDetector} — Jailbreak detection
- * - {@link MLToxicityDetector} — Toxicity / content-safety detection
- * - {@link MLPIIDetector} — NER-based PII detection (person names, orgs, locations)
- * - {@link MLHallucinationDetector} — Hallucination detection (cross-encoder)
+ *   // Before (SDK < 1.0):
+ *   import { MLInjectionDetector } from 'launchpromptly/ml';
+ *   const injection = await MLInjectionDetector.create();
  *
- * Each provider satisfies the corresponding provider interface defined in the
- * core SDK so it can be registered as a drop-in replacement.
+ *   // After (SDK ≥ 1.0):
+ *   //   1. Deploy launchpromptly-scanner (Helm: `helm install launchpromptly/scanner`)
+ *   //   2. Set LP_SCANNER_URL=http://launchpromptly-scanner.svc.cluster.local:7080
+ *   //   3. The SDK ScannerClient discovers it automatically; ML detection is on by default.
  *
- * @example
- * ```ts
- * import { LaunchPromptly } from 'launchpromptly';
- * import { MLToxicityDetector, MLInjectionDetector } from 'launchpromptly/ml';
+ * See: launchpromptly.dev/migration/inline-ml-removal
  *
- * const toxicity = await MLToxicityDetector.create();
- * const injection = await MLInjectionDetector.create();
- *
- * const lp = LaunchPromptly.init({ apiKey: 'lp_live_...' });
- * const wrapped = lp.wrap(openai, {
- *   security: {
- *     contentFilter: { providers: [toxicity] },
- *     injection: { providers: [injection] },
- *   },
- * });
- * ```
+ * License: BSL-1.1 (converts to Apache-2.0 after 4 years)
  *
  * @module
  */
 
-export { MLToxicityDetector } from './toxicity-detector';
-export type { MLToxicityDetectorOptions } from './toxicity-detector';
+const MIGRATION_URL = 'https://launchpromptly.dev/migration/inline-ml-removal';
 
-export { MLInjectionDetector } from './injection-detector';
-export type { MLInjectionDetectorOptions } from './injection-detector';
+function deprecated(name: string): never {
+  throw new Error(
+    `[launchpromptly] ${name} was removed in SDK 1.0. ` +
+      `Inline ML detection has been consolidated into the launchpromptly-scanner sidecar. ` +
+      `See ${MIGRATION_URL} for the migration guide. ` +
+      `Quick fix: deploy the scanner Helm chart and set LP_SCANNER_URL — the SDK will discover it automatically.`,
+  );
+}
 
-export { MLPIIDetector } from './pii-detector';
-export type { MLPIIDetectorOptions } from './pii-detector';
+class RemovedDetector {
+  static async create(): Promise<never> {
+    return deprecated(this.name);
+  }
+  constructor() {
+    deprecated(new.target?.name ?? 'launchpromptly/ml detector');
+  }
+}
 
-export { MLJailbreakDetector } from './jailbreak-detector';
-export type { MLJailbreakDetectorOptions } from './jailbreak-detector';
+export class MLToxicityDetector extends RemovedDetector {}
+export class MLInjectionDetector extends RemovedDetector {}
+export class MLPIIDetector extends RemovedDetector {}
+export class MLJailbreakDetector extends RemovedDetector {}
+export class MLHallucinationDetector extends RemovedDetector {}
+export class MLEmbeddingProvider extends RemovedDetector {}
+export class MLResponseJudge extends RemovedDetector {}
+export class MLContextExtractor extends RemovedDetector {}
+export class MLAttackClassifier extends RemovedDetector {}
+export class OnnxSession extends RemovedDetector {}
 
-export { MLHallucinationDetector } from './hallucination-detector';
-export type { MLHallucinationDetectorOptions } from './hallucination-detector';
+export type MLToxicityDetectorOptions = Record<string, never>;
+export type MLInjectionDetectorOptions = Record<string, never>;
+export type MLPIIDetectorOptions = Record<string, never>;
+export type MLJailbreakDetectorOptions = Record<string, never>;
+export type MLHallucinationDetectorOptions = Record<string, never>;
+export type MLEmbeddingProviderOptions = Record<string, never>;
+export type MLResponseJudgeOptions = Record<string, never>;
+export type MLContextExtractorOptions = Record<string, never>;
+export type MLAttackClassifierOptions = Record<string, never>;
+export type OnnxSessionOptions = Record<string, never>;
+export type AttackClassification = { label: string; score: number };
+export type AttackLabel = string;
+export type AttackEmbeddingIndex = unknown;
+export type AttackMatch = unknown;
+export type AttackCategory = unknown;
+export type EnsureModelOptions = Record<string, never>;
 
-export { MLEmbeddingProvider } from './embedding-provider';
-export type { MLEmbeddingProviderOptions } from './embedding-provider';
+export function loadAttackIndex(): never {
+  return deprecated('loadAttackIndex');
+}
+export function matchAgainstIndex(): never {
+  return deprecated('matchAgainstIndex');
+}
+export function hasAttackMatch(): never {
+  return deprecated('hasAttackMatch');
+}
 
-export { MLResponseJudge } from './nli-judge';
-export type { MLResponseJudgeOptions } from './nli-judge';
+export function ensureModel(): never {
+  return deprecated('ensureModel');
+}
+export function getCacheDir(): never {
+  return deprecated('getCacheDir');
+}
+export function removeModel(): never {
+  return deprecated('removeModel');
+}
+export function listCachedModels(): never {
+  return deprecated('listCachedModels');
+}
+export function getRegisteredModels(): never {
+  return deprecated('getRegisteredModels');
+}
 
-export { MLContextExtractor } from './context-extractor';
-export type { MLContextExtractorOptions } from './context-extractor';
-
-export { MLAttackClassifier } from './attack-classifier';
-export type { MLAttackClassifierOptions, AttackClassification, AttackLabel } from './attack-classifier';
-
-export { loadAttackIndex, matchAgainstIndex, hasAttackMatch } from './attack-embeddings';
-export type { AttackEmbeddingIndex, AttackMatch, AttackCategory } from './attack-embeddings';
-
-export { OnnxSession } from './onnx-runtime';
-export type { OnnxSessionOptions } from './onnx-runtime';
-
-export {
-  ensureModel,
-  getCacheDir,
-  removeModel,
-  listCachedModels,
-  getRegisteredModels,
-  MODEL_NAME_MAP,
-} from './model-cache';
-export type { EnsureModelOptions } from './model-cache';
+export const MODEL_NAME_MAP: Record<string, string> = {};

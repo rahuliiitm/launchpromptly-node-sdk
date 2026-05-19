@@ -1,7 +1,7 @@
 {
   "name": "launchpromptly",
-  "version": "0.6.1",
-  "description": "LaunchPromptly Node.js SDK — runtime safety layer for LLM applications (PII redaction, injection detection, cost guards)",
+  "version": "1.0.0-rc.1",
+  "description": "LaunchPromptly Node.js SDK — thin trust boundary for LLM apps (rule-based detection in-process; ML runs in the launchpromptly-scanner sidecar)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -34,10 +34,12 @@
       "types": "./dist/ml/index.d.ts",
       "require": "./dist/ml/index.js",
       "import": "./dist/ml/index.js"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "require": "./dist/agent/index.js",
+      "import": "./dist/agent/index.js"
     }
-  },
-  "bin": {
-    "launchpromptly": "./dist/ml/cli.js"
   },
   "files": [
     "dist",
@@ -53,20 +55,7 @@
     "test:integration": "tsx tests/integration-test.ts",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "onnxruntime-node": ">=1.16.0",
-    "@huggingface/transformers": ">=3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "onnxruntime-node": {
-      "optional": true
-    },
-    "@huggingface/transformers": {
-      "optional": true
-    }
-  },
   "devDependencies": {
-    "@huggingface/transformers": "^3.8.1",
     "@launchpromptly/mcp-core": "file:../launchpromptly-mcp-core",
     "@opentelemetry/api": "^1.9.0",
     "@types/jest": "^29.5.0",
